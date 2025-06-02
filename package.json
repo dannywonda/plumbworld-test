@@ -6,12 +6,17 @@
         "build": "vite build"
     },
     "devDependencies": {
+        "autoprefixer": "^10.4.21",
         "axios": "^1.6.4",
         "laravel-vite-plugin": "^1.0.0",
+        "postcss": "^8.5.4",
+        "tailwindcss": "^4.1.8",
         "vite": "^5.0.0"
     },
     "dependencies": {
         "@tailwindcss/cli": "^4.1.8",
-        "tailwindcss": "^4.1.8"
+        "@vitejs/plugin-vue": "^5.2.4",
+        "lodash": "^4.17.21",
+        "pinia": "^3.0.2"
     }
 }
