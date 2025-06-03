@@ -1,9 +1,4 @@
-````markdown
-# Laravel 10 – Plumbworld Test
-
-A web-based plumbing service management application built with Laravel 10. This project includes features such as job scheduling, customer management, and an admin dashboard.
-
----
+# Plumbworld Test
 
 ## ⚙️ Setup Instructions
 
