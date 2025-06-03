@@ -9,7 +9,7 @@ A web-based plumbing service management application built with Laravel 10. This 
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/dannywonda/plumbworld.git
+git clone https://github.com/dannywonda/plumbworld-test.git
 cd plumbworld
 ````
 
