@@ -22,13 +22,28 @@ class ProductRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'name'          => 'required|string|max:255',
-            'description'   => 'nullable|string',
-            'price'         => 'required|numeric|min:0',
-            'stock'         => 'required|integer|min:0',
-            'is_active'     => 'required|boolean',
-            'published_at'  => 'nullable|date',
-        ];
+        if ($this->isMethod('post')) {
+            return [
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'price' => 'required|numeric|min:0',
+                'stock' => 'required|integer|min:0',
+                'is_active' => 'required|boolean',
+                'published_at' => 'nullable|date',
+            ];
+        }
+
+        if ($this->isMethod('put') || $this->isMethod('patch')) {
+            return [
+                'name' => 'sometimes|required|string|max:255',
+                'description' => 'sometimes|nullable|string',
+                'price' => 'sometimes|required|numeric|min:0',
+                'stock' => 'sometimes|required|integer|min:0',
+                'is_active' => 'sometimes|required|boolean',
+                'published_at' => 'sometimes|nullable|date',
+            ];
+        }
+
+        return [];
     }
 }

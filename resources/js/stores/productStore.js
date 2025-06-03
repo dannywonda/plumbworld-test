@@ -6,6 +6,9 @@ import debounce from 'lodash/debounce'
 export const useProductStore = defineStore('productStore', {
     state: () => ({
         products: [],
+        currentPage: 1,
+        lastPage: 1,
+        perPage: 12,
         searchQuery: '',
         isActive: null,
         minPrice: null,
@@ -14,7 +17,8 @@ export const useProductStore = defineStore('productStore', {
         maxStock: null,
         loading: false,
         error: null,
-        stats: {}
+        stats: {},
+        debouncedFetch: null,
     }),
 
     actions: {
@@ -33,12 +37,12 @@ export const useProductStore = defineStore('productStore', {
             }
         },
 
-        async fetchProducts() {
+        async fetchProducts(page = 1) {
             this.loading = true
             this.error = null
 
             try {
-                const params = {}
+                 const params = { page }
 
                 if (this.searchQuery.trim() !== '') {
                     params.name = this.searchQuery.trim()
@@ -61,11 +65,23 @@ export const useProductStore = defineStore('productStore', {
 
                 const res = await axios.get('/api/products', { params })
                 this.products = res.data.data || []
+
+                this.currentPage = res.data.meta.current_page
+                this.lastPage = res.data.meta.last_page
+                this.perPage = res.data.meta.per_page
+
+                console.log('Products fetched:', this.products);
+
             } catch (error) {
                 this.error = error.message || 'Failed to fetch products'
             } finally {
                 this.loading = false
             }
+        },
+
+        changePage(page) {
+            if (page < 1 || page > this.lastPage) return;
+            this.fetchProducts(page);
         },
 
         debouncedFetch: debounce(function () {

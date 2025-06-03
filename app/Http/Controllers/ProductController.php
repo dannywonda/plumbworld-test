@@ -2,52 +2,66 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use App\Models\Product;
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
+use App\Repositories\ProductRepository;
 
 class ProductController extends Controller
 {
-
-    public const PAGINATE = 12;
+    /**
+     * Inject the ProductRepository dependency.
+     *
+     * @param ProductRepository $repository
+     */
+    public function __construct(
+        public readonly ProductRepository $repository
+    ) {
+        //
+    }
 
     /**
-     * Display a paginated listing of products.
+     * Display a paginated list of products, with optional filters from request.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index(Request $request)
     {
-        $query = Product::query();
-
-        $products = $query
-            ->filter($request->only([
-                'name',
-                'is_active',
-                'min_price',
-                'max_price',
-                'min_stock',
-                'max_stock',
-            ]))
-            ->latest()
-            ->paginate(self::PAGINATE);
+        $products = $this->repository->all($request);
 
         return ProductResource::collection($products);
     }
 
     /**
-     * Store a newly created product.
+     * Store a newly created product in the database.
+     *
+     * @param ProductRequest $request
+     * @return ProductResource
      */
     public function store(ProductRequest $request)
     {
-        return new ProductResource(Product::create(array_merge(
+        // Merge validated request data with additional fields
+        $data = array_merge(
             $request->validated(),
-            ['slug' => Str::slug($request->name), 'published_at' => now()]
-        )));
+            [
+                'slug'         => Str::slug($request->name),
+                'published_at' => now(),
+            ]
+        );
+
+        $product = $this->repository->create($data);
+
+        return new ProductResource($product);
     }
 
     /**
-     * Display the specified product.
+     * Display a single product.
+     *
+     * @param Product $product
+     * @return ProductResource
      */
     public function show(Product $product)
     {
@@ -55,43 +69,50 @@ class ProductController extends Controller
     }
 
     /**
-     * Update the specified product.
+     * Update the specified product in the database.
+     *
+     * @param ProductRequest $request
+     * @param Product $product
+     * @return ProductResource
      */
     public function update(ProductRequest $request, Product $product)
     {
-        $product->update(array_merge(
+        // Merge validated request data with slug and published_at
+        $data = array_merge(
             $request->validated(),
             [
-                'slug' => \Illuminate\Support\Str::slug($request->name),
+                'slug'         => Str::slug($request->name),
                 'published_at' => now(),
             ]
-        ));
+        );
 
-        return new ProductResource($product);
+        $updatedProduct = $this->repository->update($data, $product);
+
+        return new ProductResource($updatedProduct);
     }
 
     /**
-     * Remove the specified product.
+     * Delete the specified product from the database.
+     *
+     * @param Product $product
+     * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(Product $product)
     {
-        $product->delete();
+        $this->repository->delete($product);
+
         return response()->json(null, 204);
     }
-    
+
     /**
-     * Get statistics for products.
+     * Get basic statistics about products.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function stats()
     {
-        $stats = [
-            'total_products'        => Product::count(),
-            'active_products'       => Product::where('is_active', true)->count(),
-            'inactive_products'     => Product::where('is_active', false)->count(),
-            'average_price'         => Product::avg('price'),
-        ];
+        $stats = $this->repository->stats();
 
         return response()->json($stats);
     }
-
 }

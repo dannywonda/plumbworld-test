@@ -1298,6 +1298,11 @@
       outline-style: none;
     }
   }
+  .disabled\:opacity-50 {
+    &:disabled {
+      opacity: 50%;
+    }
+  }
   .sm\:-mx-6 {
     @media (width >= 40rem) {
       margin-inline: calc(var(--spacing) * -6);
